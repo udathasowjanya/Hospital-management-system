@@ -1,0 +1,166 @@
+CREATE DATABASE HospitalManagementSystem;
+USE HospitalManagementSystem;
+
+-- 1. Department
+CREATE TABLE Department (
+    DepartmentID INT PRIMARY KEY,
+    DeptName VARCHAR(100),
+    Location VARCHAR(100),
+    HeadDoctorID INT
+);
+
+-- 2. Patient
+CREATE TABLE Patient (
+    PatientID INT PRIMARY KEY,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    DOB DATE,
+    Gender VARCHAR(10),
+    Phone VARCHAR(15),
+    Address VARCHAR(200),
+    BloodGroup VARCHAR(5)
+);
+
+-- 3. Doctor
+CREATE TABLE Doctor (
+    DoctorID INT PRIMARY KEY,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    Specialization VARCHAR(100),
+    Phone VARCHAR(15),
+    Email VARCHAR(100),
+    DepartmentID INT,
+    FOREIGN KEY (DepartmentID) REFERENCES Department(DepartmentID)
+);
+
+-- 4. Appointment
+CREATE TABLE Appointment (
+    AppointmentID INT PRIMARY KEY,
+    ApptDate DATE,
+    ApptTime TIME,
+    Status VARCHAR(30),
+    PatientID INT,
+    DoctorID INT,
+    FOREIGN KEY (PatientID) REFERENCES Patient(PatientID),
+    FOREIGN KEY (DoctorID) REFERENCES Doctor(DoctorID)
+);
+
+-- 5. Medical Record
+CREATE TABLE MedicalRecord (
+    RecordID INT PRIMARY KEY,
+    PatientID INT,
+    DoctorID INT,
+    Diagnosis VARCHAR(200),
+    Treatment VARCHAR(200),
+    RecordDate DATE,
+    FOREIGN KEY (PatientID) REFERENCES Patient(PatientID),
+    FOREIGN KEY (DoctorID) REFERENCES Doctor(DoctorID)
+);
+
+-- 6. Billing
+CREATE TABLE Billing (
+    BillID INT PRIMARY KEY,
+    PatientID INT,
+    AppointmentID INT,
+    Amount DECIMAL(10,2),
+    PaymentStatus VARCHAR(30),
+    BillDate DATE,
+    FOREIGN KEY (PatientID) REFERENCES Patient(PatientID),
+    FOREIGN KEY (AppointmentID) REFERENCES Appointment(AppointmentID)
+);
+
+-- 7. Staff
+CREATE TABLE Staff (
+    StaffID INT PRIMARY KEY,
+    Name VARCHAR(100),
+    Role VARCHAR(50),
+    Phone VARCHAR(15),
+    DepartmentID INT,
+    FOREIGN KEY (DepartmentID) REFERENCES Department(DepartmentID)
+);
+
+-- 8. Room
+CREATE TABLE Room (
+    RoomID INT PRIMARY KEY,
+    RoomType VARCHAR(50),
+    Status VARCHAR(30),
+    DepartmentID INT,
+    PatientID INT,
+    FOREIGN KEY (DepartmentID) REFERENCES Department(DepartmentID),
+    FOREIGN KEY (PatientID) REFERENCES Patient(PatientID)
+);
+
+-- Sample Department data
+INSERT INTO Department VALUES
+(101, 'Cardiology', 'Block A', 201),
+(102, 'Neurology', 'Block B', 202),
+(103, 'Orthopedics', 'Block C', 203);
+
+-- Sample Patient data
+INSERT INTO Patient VALUES
+(1, 'Ravi', 'Kumar', '2002-05-10', 'Male', '9876543210', 'Hyderabad', 'O+'),
+(2, 'Anu', 'Reddy', '2003-08-15', 'Female', '9876501234', 'Vijayawada', 'A+'),
+(3, 'Rahul', 'Sharma', '2001-11-20', 'Male', '9876512345', 'Visakhapatnam', 'B+');
+
+-- Sample Doctor data
+INSERT INTO Doctor VALUES
+(201, 'Arun', 'Kumar', 'Cardiologist', '9000000001', 'arun@gmail.com', 101),
+(202, 'Priya', 'Rao', 'Neurologist', '9000000002', 'priya@gmail.com', 102),
+(203, 'Suresh', 'Reddy', 'Orthopedic', '9000000003', 'suresh@gmail.com', 103);
+
+-- Sample Appointment data
+INSERT INTO Appointment VALUES
+(301, '2026-09-20', '10:00:00', 'Scheduled', 1, 201),
+(302, '2026-09-21', '11:00:00', 'Completed', 2, 202),
+(303, '2026-09-22', '12:00:00', 'Scheduled', 3, 203);
+
+-- Sample Medical Record data
+INSERT INTO MedicalRecord VALUES
+(401, 1, 201, 'Heart Checkup', 'Medication', '2026-09-20'),
+(402, 2, 202, 'Headache', 'Treatment', '2026-09-21'),
+(403, 3, 203, 'Fracture', 'Physiotherapy', '2026-09-22');
+
+-- Sample Billing data
+INSERT INTO Billing VALUES
+(501, 1, 301, 5000.00, 'Pending', '2026-09-20'),
+(502, 2, 302, 3500.00, 'Paid', '2026-09-21'),
+(503, 3, 303, 4500.00, 'Pending', '2026-09-22');
+
+-- Sample Staff data
+INSERT INTO Staff VALUES
+(601, 'Ramesh', 'Nurse', '9111111111', 101),
+(602, 'Lakshmi', 'Receptionist', '9222222222', 102),
+(603, 'Kiran', 'Technician', '9333333333', 103);
+
+-- Sample Room data
+INSERT INTO Room VALUES
+(701, 'General', 'Occupied', 101, 1),
+(702, 'Private', 'Available', 102, NULL),
+(703, 'ICU', 'Occupied', 103, 3);
+
+-- 1. Display all patients
+SELECT * FROM Patient;
+
+-- 2. Display appointments with patient and doctor names
+SELECT 
+    p.FirstName AS PatientName,
+    d.FirstName AS DoctorName,
+    a.ApptDate,
+    a.Status
+FROM Appointment a
+JOIN Patient p ON a.PatientID = p.PatientID
+JOIN Doctor d ON a.DoctorID = d.DoctorID;
+
+-- 3. Update billing payment status
+UPDATE Billing
+SET PaymentStatus = 'Paid'
+WHERE BillID = 501;
+
+SELECT * FROM Billing;
+
+-- 4. Count doctors in each department
+SELECT 
+    DepartmentID,
+    COUNT(*) AS TotalDoctors
+FROM Doctor
+GROUP BY DepartmentID;
